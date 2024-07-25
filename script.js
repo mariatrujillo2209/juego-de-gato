@@ -31,21 +31,48 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleCellClick(e) {
         const index = e.target.getAttribute('data-index');
         if (!board[index] && !popup.classList.contains('show')) {
-            board[index] = currentPlayer;
-            e.target.textContent = currentPlayer;
+            makeMove(index, currentPlayer);
             const winner = checkWinner();
-            if (winner) {
-                winnerMessage.textContent = winner === 'Empate' ? 'Empate' : `Ganador: ${winner}`;
-                popup.classList.add('show');
+            if (!winner) {
+                currentPlayer = 'O';
+                setTimeout(systemMove, 500);
             } else {
-                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                endGame(winner);
             }
         }
     }
     
+    function makeMove(index, player) {
+        board[index] = player;
+        cells[index].textContent = player;
+        cells[index].style.color = player === 'X' ? '#fff' : '#f00';
+    }
+    
+    function systemMove() {
+        const availableMoves = board
+            .map((cell, index) => (cell === null ? index : null))
+            .filter(index => index !== null);
+        const move = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+        makeMove(move, currentPlayer);
+        const winner = checkWinner();
+        if (winner) {
+            endGame(winner);
+        } else {
+            currentPlayer = 'X';
+        }
+    }
+    
+    function endGame(winner) {
+        winnerMessage.textContent = winner === 'Empate' ? 'Empate' : `Ganador: ${winner}`;
+        popup.classList.add('show');
+    }
+    
     function restartGame() {
         board = Array(9).fill(null);
-        cells.forEach(cell => cell.textContent = '');
+        cells.forEach(cell => {
+            cell.textContent = '';
+            cell.style.color = '#fff';
+        });
         currentPlayer = 'X';
         popup.classList.remove('show');
     }
